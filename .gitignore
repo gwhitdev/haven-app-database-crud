@@ -1,5 +1,6 @@
 # Node.js specific
 node_modules/
+/node_modules
 npm-debug.log
 yarn-error.log
 package-lock.json
@@ -13,6 +14,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment variables
+/*.env
 .env
 
 # Directory for local environment variables
@@ -48,3 +50,5 @@ coverage/
 # Build directory
 dist/
 build/
+
+.DS_Store
