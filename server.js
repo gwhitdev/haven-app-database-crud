@@ -79,6 +79,7 @@ app.get('/api/all-results', async (req, res) => {
 
 app.post('/api/report', (req, res) => {
     console.log(JSON.stringify(req.body));
+    storeRequestInDatabase(req.body);
     const preparedSql = 'INSERT INTO `reports` (`incident_description`,`location`) ' +
         'VALUES (?,?)';
     const values = [
@@ -105,6 +106,9 @@ app.post('/api/report', (req, res) => {
 
 app.post('/api/reporter', (req, res) => {
     console.log('POST /api/reporter');
+
+    storeRequestInDatabase(req.body);
+
     const preparedSql = 'INSERT INTO `reporters` (`first_name`, `last_name`, `email`, `phone_number`, `how_can_help`, `report_id`) values (?,?,?,?,?,?)';
     const values = [
         req.body.firstName,
@@ -123,6 +127,7 @@ app.post('/api/reporter', (req, res) => {
                 'message': 'Could not insert into table'
             })
         }
+
         returnLastInsert(results.insertId,'reporters', res);
     })
     connection.unprepare();
@@ -141,3 +146,14 @@ app.post('/api/test', (req, res) => {
 app.listen(port, () => {
     console.log('Listening on port ' + port);
 })
+
+function storeRequestInDatabase(requestData) {
+    const itemToStore = JSON.stringify(requestData);
+    const prepared = 'INSERT INTO `audit` (`entity`) values (?)';
+    const values = [itemToStore];
+
+    connection.execute(prepared, values, function (err, results) {
+        if (err) console.error(err);
+        console.log(results);
+    })
+}
