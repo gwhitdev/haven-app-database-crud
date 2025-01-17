@@ -23,8 +23,6 @@ connection.connect((err) => {
     }
 });
 
-
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.get('/', (req, res) => {
@@ -33,6 +31,28 @@ app.get('/', (req, res) => {
         'message': 'Hello world!'
     })
 })
+
+const returnLastInsert = (insertId, tableName, res) => {
+    let preparedLastInsertSql = '';
+
+    if (tableName === 'reports') {
+        preparedLastInsertSql = 'select * from `reports` where `id` = ?';
+    }
+    if (tableName === 'reporters') {
+        preparedLastInsertSql = 'select * from `reporters` where `id` = ?';
+    }
+    console.log(preparedLastInsertSql)
+    const valuesForLastInsert  = [insertId];
+
+    connection.execute(preparedLastInsertSql, valuesForLastInsert, function (err, results) {
+        if (err) return err;
+        res.json({
+            status: 'success',
+            message: 'Successfully inserted into table',
+            results
+        })
+    })
+}
 
 app.get('/api/all-results', async (req, res) => {
     console.log('GET /api/all-results');
@@ -65,9 +85,35 @@ app.post('/api/report', (req, res) => {
         req.body.description,
         req.body.location
     ];
-
-
     console.log(preparedSql, values);
+    connection.execute(preparedSql, values, function (err, results) {
+        if (err) {
+            console.error(err);
+            res.status(500).json({
+                'status': 'error',
+                'message': 'Could not insert into table'
+            })
+        }
+
+        returnLastInsert(results.insertId,'reports', res);
+    })
+    connection.unprepare();
+
+})
+
+
+
+app.post('/api/reporter', (req, res) => {
+    console.log('POST /api/reporter');
+    const preparedSql = 'INSERT INTO `reporters` (`first_name`, `last_name`, `email`, `phone_number`, `how_can_help`, `report_id`) values (?,?,?,?,?,?)';
+    const values = [
+        req.body.firstName,
+        req.body.lastName,
+        req.body.email,
+        req.body.phoneNumber,
+        req.body.howCanHelp,
+        req.body.reportId
+    ];
 
     connection.execute(preparedSql, values, function (err, results) {
         if (err) {
@@ -77,11 +123,9 @@ app.post('/api/report', (req, res) => {
                 'message': 'Could not insert into table'
             })
         }
-        res.json({
-            'message-received': true,
-            'data': JSON.stringify(results)
-        })
+        returnLastInsert(results.insertId,'reporters', res);
     })
+    connection.unprepare();
 })
 
 app.post('/api/test', (req, res) => {
