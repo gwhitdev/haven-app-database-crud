@@ -1,8 +1,34 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
+const mysql = require('mysql');
 
+const connection = mysql.createConnection({
+        host: 	'f8ogy1hm9ubgfv2s.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
+        user: 	'ar5pqvint2dxw8oh',
+        password: 	'hetj6nzsvtkk12b8',
+        port: 3306,
+        database: 'xj4mbu8vwxveq0nz'
+});
+
+connection.connect((err) => {
+    if (err) {
+        console.log(err)
+    } else {
+        console.log('connected to DB')
+    }
+});
+
+connection.query('SHOW TABLES', (err, results) => {
+    if (err) throw err;
+    console.log(results);
+});
+
+
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.get('/', (req, res) => {
     res.json({
         'status': 'success',
