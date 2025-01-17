@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3001;
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 const connection = mysql.createConnection({
         host: 	'f8ogy1hm9ubgfv2s.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
@@ -20,10 +20,7 @@ connection.connect((err) => {
     }
 });
 
-connection.query('SHOW TABLES', (err, results) => {
-    if (err) throw err;
-    console.log(results);
-});
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -33,6 +30,31 @@ app.get('/', (req, res) => {
         'message': 'Hello world!'
     })
 })
+
+app.get('/api/all-results', async (req, res) => {
+    console.log('GET /api/all-results');
+
+
+    connection.query(
+        {
+            sql: 'SELECT * FROM reports',
+        },
+        function (err, results, fields) {
+            if (err) {
+                res.json({
+                    'status': 'error',
+                    'message': 'Could not detect the report table in the database'
+                })
+            }
+            console.log(results); // results contains rows returned by server
+            res.json({
+                'status': 'success',
+                'message': 'Successfully detected reports table',
+                'data': results
+            })
+        }
+    );
+});
 
 app.post('/api/report', (req, res) => {
     console.log(JSON.stringify(req.body));
