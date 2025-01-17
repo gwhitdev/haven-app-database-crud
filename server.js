@@ -36,8 +36,6 @@ app.get('/', (req, res) => {
 
 app.get('/api/all-results', async (req, res) => {
     console.log('GET /api/all-results');
-
-
     connection.query(
         {
             sql: 'SELECT * FROM reports',
@@ -61,9 +59,28 @@ app.get('/api/all-results', async (req, res) => {
 
 app.post('/api/report', (req, res) => {
     console.log(JSON.stringify(req.body));
-    res.json({
-        'message-received': true,
-        'data': JSON.stringify(req.body)
+    const preparedSql = 'INSERT INTO `reports` (`incident_description`,`location`) ' +
+        'VALUES (?,?)';
+    const values = [
+        req.body.description,
+        req.body.location
+    ];
+
+
+    console.log(preparedSql, values);
+
+    connection.execute(preparedSql, values, function (err, results) {
+        if (err) {
+            console.error(err);
+            res.status(500).json({
+                'status': 'error',
+                'message': 'Could not insert into table'
+            })
+        }
+        res.json({
+            'message-received': true,
+            'data': JSON.stringify(results)
+        })
     })
 })
 
