@@ -25,14 +25,30 @@ connection.query('SHOW TABLES', (err, results) => {
     console.log(results);
 });
 
-
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.get('/', (req, res) => {
     res.json({
         'status': 'success',
         'message': 'Hello world!'
+    })
+})
+
+app.post('/api/report', (req, res) => {
+    console.log(JSON.stringify(req.body));
+    res.json({
+        'message-received': true,
+        'data': JSON.stringify(req.body)
+    })
+})
+
+app.post('/api/test', (req, res) => {
+    console.log('Received POST request to /api/test')
+    console.log(JSON.stringify(req.body));
+    res.json({
+        'status': 'success',
+        'message': 'POST request received',
+        'dataReceived': JSON.stringify(req.body)
     })
 })
 
