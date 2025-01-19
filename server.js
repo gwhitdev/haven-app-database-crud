@@ -90,8 +90,8 @@ app.get('/api/all-results', async (req, res) => {
 
 app.post('/api/report', (req, res) => {
     console.log(JSON.stringify(req.body));
-    logger.info('POST /api/report', JSON.stringify(req.body));;
-    logger.info('REQUEST RECEIVED:',req);
+    logger.info('POST /api/report');
+    logger.info('REQUEST RECEIVED:',req.body);
     storeRequestInDatabase(req.body);
     const preparedSql = 'INSERT INTO `reports` (`incident_description`,`location`) ' +
         'VALUES (?,?)';
@@ -119,7 +119,8 @@ app.post('/api/report', (req, res) => {
 
 app.post('/api/reporter', (req, res) => {
     console.log('POST /api/reporter');
-
+    logger.info('POST /api/reporter')
+    logger.info('REQUEST:',req.body);
     storeRequestInDatabase(req.body);
 
     const preparedSql = 'INSERT INTO `reporters` (`first_name`, `last_name`, `email`, `phone_number`, `how_can_help`, `report_id`) values (?,?,?,?,?,?)';
@@ -127,7 +128,7 @@ app.post('/api/reporter', (req, res) => {
         req.body.firstName,
         req.body.lastName,
         req.body.email,
-        req.body.phoneNumber,
+        req.body.phone,
         req.body.howCanHelp,
         req.body.reportId
     ];
