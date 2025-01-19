@@ -4,6 +4,17 @@ const app = express();
 const port = process.env.PORT || 3001;
 const mysql = require('mysql2');
 const cors = require('cors');
+const winston = require('winston');
+
+const logger = winston.createLogger({
+    level: 'verbose',
+    format: winston.format.json(),
+    transports: [
+        new winston.transports.Console({
+            format: winston.format.simple(),
+        })
+    ]
+})
 
 app.use(cors());
 
@@ -79,6 +90,7 @@ app.get('/api/all-results', async (req, res) => {
 
 app.post('/api/report', (req, res) => {
     console.log(JSON.stringify(req.body));
+    logger.info(req.body);
     storeRequestInDatabase(req.body);
     const preparedSql = 'INSERT INTO `reports` (`incident_description`,`location`) ' +
         'VALUES (?,?)';
