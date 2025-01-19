@@ -5,7 +5,11 @@ const port = process.env.PORT || 3001;
 const mysql = require('mysql2');
 const cors = require('cors');
 const winston = require('winston');
-
+const storeRequestInDatabase = require('./src/storeRequestInDatabase');
+const returnLastInsert = require('./src/returnLastInsertId');
+const multer = require('multer');
+const upload = multer();
+// Setup logger
 const logger = winston.createLogger({
     level: 'verbose',
     format: winston.format.json(),
@@ -15,9 +19,9 @@ const logger = winston.createLogger({
         })
     ]
 })
-
+// Add CORS to allow all origins for current purposes
 app.use(cors());
-
+// Create connection to DB
 const connection = mysql.createConnection({
         host: 	'f8ogy1hm9ubgfv2s.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
         user: 	'ar5pqvint2dxw8oh',
@@ -26,6 +30,7 @@ const connection = mysql.createConnection({
         database: 'xj4mbu8vwxveq0nz'
 });
 
+// Test connection to DB
 connection.connect((err) => {
     if (err) {
         console.log(err)
@@ -34,6 +39,7 @@ connection.connect((err) => {
     }
 });
 
+// Allow JSON and URL encoded requests
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.get('/', (req, res) => {
@@ -43,28 +49,9 @@ app.get('/', (req, res) => {
     })
 })
 
-const returnLastInsert = (insertId, tableName, res) => {
-    let preparedLastInsertSql = '';
 
-    if (tableName === 'reports') {
-        preparedLastInsertSql = 'select * from `reports` where `id` = ?';
-    }
-    if (tableName === 'reporters') {
-        preparedLastInsertSql = 'select * from `reporters` where `id` = ?';
-    }
-    console.log(preparedLastInsertSql)
-    const valuesForLastInsert  = [insertId];
 
-    connection.execute(preparedLastInsertSql, valuesForLastInsert, function (err, results) {
-        if (err) return err;
-        res.json({
-            status: 'success',
-            message: 'Successfully inserted into table',
-            results
-        })
-    })
-}
-
+// GET /api/all-results -> returns readout of all the records in the REPORTS table
 app.get('/api/all-results', async (req, res) => {
     console.log('GET /api/all-results');
     connection.query(
@@ -88,11 +75,12 @@ app.get('/api/all-results', async (req, res) => {
     );
 });
 
-app.post('/api/report', (req, res) => {
+// POST /api/report -> insert a report into the DB and returns the ID of the inserted row
+app.post('/api/report', upload.none(), (req, res) => {
     console.log(JSON.stringify(req.body));
     logger.info('POST /api/report');
     logger.info('REQUEST RECEIVED:',req.body);
-    storeRequestInDatabase(req.body);
+    storeRequestInDatabase(req.body, connection);
     const preparedSql = 'INSERT INTO `reports` (`incident_description`,`location`) ' +
         'VALUES (?,?)';
     const values = [
@@ -109,19 +97,18 @@ app.post('/api/report', (req, res) => {
             })
         }
 
-        returnLastInsert(results.insertId,'reports', res);
+        returnLastInsert(results.insertId,'reports', res, connection);
     })
     connection.unprepare();
 
 })
 
-
-
-app.post('/api/reporter', (req, res) => {
+// POST /api/reporter -> insert a reporter record and returns ID of the last inserted row
+app.post('/api/reporter', upload.none(), (req, res) => {
     console.log('POST /api/reporter');
     logger.info('POST /api/reporter')
     logger.info('REQUEST:',req.body);
-    storeRequestInDatabase(req.body);
+    storeRequestInDatabase(req.body, connection);
 
     const preparedSql = 'INSERT INTO `reporters` (`first_name`, `last_name`, `email`, `phone_number`, `how_can_help`, `report_id`) values (?,?,?,?,?,?)';
     const values = [
@@ -142,11 +129,12 @@ app.post('/api/reporter', (req, res) => {
             })
         }
 
-        returnLastInsert(results.insertId,'reporters', res);
+        returnLastInsert(results.insertId,'reporters', res, connection);
     })
     connection.unprepare();
 })
 
+// POST /api/test -> does not insert anything into the DB but tests receiving a POST request, returns the request body
 app.post('/api/test', (req, res) => {
     console.log('Received POST request to /api/test')
     console.log(JSON.stringify(req.body));
@@ -157,17 +145,8 @@ app.post('/api/test', (req, res) => {
     })
 })
 
+// Server listening
 app.listen(port, () => {
     console.log('Listening on port ' + port);
 })
 
-function storeRequestInDatabase(requestData) {
-    const itemToStore = JSON.stringify(requestData);
-    const prepared = 'INSERT INTO `audit` (`entity`) values (?)';
-    const values = [itemToStore];
-
-    connection.execute(prepared, values, function (err, results) {
-        if (err) console.error(err);
-        console.log(results);
-    })
-}
