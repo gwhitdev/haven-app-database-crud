@@ -9,6 +9,7 @@ const storeRequestInDatabase = require('./src/storeRequestInDatabase');
 const returnLastInsert = require('./src/returnLastInsertId');
 const multer = require('multer');
 const upload = multer();
+
 // Setup logger
 const logger = winston.createLogger({
     level: 'verbose',
@@ -23,11 +24,11 @@ const logger = winston.createLogger({
 app.use(cors());
 // Create connection to DB
 const connection = mysql.createConnection({
-        host: 	'f8ogy1hm9ubgfv2s.chr7pe7iynqr.eu-west-1.rds.amazonaws.com',
-        user: 	'ar5pqvint2dxw8oh',
-        password: 	'hetj6nzsvtkk12b8',
-        port: 3306,
-        database: 'xj4mbu8vwxveq0nz'
+        host: 	process.env.host,
+        user: 	process.env.username,
+        password: 	process.env.password,
+        port: process.env.dbPort,
+        database: process.env.database
 });
 
 // Test connection to DB
@@ -107,7 +108,7 @@ app.get('/api/all-results', async (req, res) => {
 */
 
 // POST /api/report -> insert a report into the DB and returns the ID of the inserted row
-app.post('/api/reports', upload.none(), (req, res) => {
+app.post('/api/reports', upload.none(),(req, res) => {
     console.log(JSON.stringify(req.body));
     logger.info('POST /api/report');
     logger.info('REQUEST RECEIVED:',req.body);
@@ -136,7 +137,6 @@ app.post('/api/reports', upload.none(), (req, res) => {
 
 // POST /api/reporter -> insert a reporter record and returns ID of the last inserted row
 app.post('/api/reporters', upload.none(), (req, res) => {
-    console.log('POST /api/reporter');
     logger.info('POST /api/reporter')
     logger.info('REQUEST:',req.body);
     storeRequestInDatabase(req.body, connection);
