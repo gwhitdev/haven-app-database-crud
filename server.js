@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
 // GET /api/reporters
 app.get('/api/reporters', (req, res) => {
     console.log('GET /api/reporters');
-    connection.query({sql:'SELECT * FROM reports'}, (err, results) => {
+    connection.query({sql:'SELECT * FROM reporters'}, (err, results) => {
         if (err) {
             logger.error('GET /api/reporters ERROR', err);
             res.status(500).send({
