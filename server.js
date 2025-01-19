@@ -49,8 +49,38 @@ app.get('/', (req, res) => {
     })
 })
 
+// GET /api/reporters
+app.get('/api/reporters', (req, res) => {
+    console.log('GET /api/reporters');
+    connection.query({sql:'SELECT * FROM reports'}, (err, results) => {
+        if (err) {
+            logger.error('GET /api/reporters ERROR', err);
+            res.status(500).send({
+                'status': 'error',
+                'message': 'Something went wrong!'
+            })
+        }
+        logger.info('GET /api/reporters SUCCESS');
+        res.json(results);
+    });
+})
 
-
+// GET /api/reports
+app.get('/api/reports', (req, res) => {
+    logger.info('GET /api/reports');
+    connection.query({sql:'SELECT * FROM reports'}, (err, results) => {
+        if (err) {
+            logger.error('GET /api/reports ERROR', err);
+            res.status(500).send({
+                'status': 'error',
+                'message': 'Something went wrong!'
+            })
+        }
+        logger.info('GET /api/reports SUCCESS');
+        res.json(results);
+    })
+})
+/* DEPRECATED
 // GET /api/all-results -> returns readout of all the records in the REPORTS table
 app.get('/api/all-results', async (req, res) => {
     console.log('GET /api/all-results');
@@ -74,9 +104,10 @@ app.get('/api/all-results', async (req, res) => {
         }
     );
 });
+*/
 
 // POST /api/report -> insert a report into the DB and returns the ID of the inserted row
-app.post('/api/report', upload.none(), (req, res) => {
+app.post('/api/reports', upload.none(), (req, res) => {
     console.log(JSON.stringify(req.body));
     logger.info('POST /api/report');
     logger.info('REQUEST RECEIVED:',req.body);
@@ -104,7 +135,7 @@ app.post('/api/report', upload.none(), (req, res) => {
 })
 
 // POST /api/reporter -> insert a reporter record and returns ID of the last inserted row
-app.post('/api/reporter', upload.none(), (req, res) => {
+app.post('/api/reporters', upload.none(), (req, res) => {
     console.log('POST /api/reporter');
     logger.info('POST /api/reporter')
     logger.info('REQUEST:',req.body);
