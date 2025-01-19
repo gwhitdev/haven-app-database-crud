@@ -90,7 +90,8 @@ app.get('/api/all-results', async (req, res) => {
 
 app.post('/api/report', (req, res) => {
     console.log(JSON.stringify(req.body));
-    logger.info(req.body);
+    logger.info('POST /api/report', JSON.stringify(req.body));;
+    logger.info('REQUEST RECEIVED:',req);
     storeRequestInDatabase(req.body);
     const preparedSql = 'INSERT INTO `reports` (`incident_description`,`location`) ' +
         'VALUES (?,?)';
