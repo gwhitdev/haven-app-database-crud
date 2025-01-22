@@ -1,6 +1,6 @@
 ## HAVEN - (Humanitarian Action for Vigilance Empowerment and Notification)
 [View our live project](https://mikael-johnsson.github.io/hack-jan25-team3)
-
+![Awarded Third Place in Code Institute Hackathon](assertion-SEKJS1RNQTKLR8VsXKYs-w.png)
 
 ## Table of Contents
 
